@@ -1,0 +1,10 @@
+# frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vscode/
+frontend/.idea
+
+
+# rust
+target/
+

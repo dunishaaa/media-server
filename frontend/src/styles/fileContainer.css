@@ -1,0 +1,78 @@
+.files-container{
+    background-color: rgb(43, 42, 44);
+    justify-content: center;
+    margin: 20px;
+    padding: 20px;
+    width: 300px;
+    border-radius: 5px;
+    margin-left: auto;
+    margin-right: auto;
+    box-shadow: 0px 0px 7px 0px rgb(21, 21, 21);
+    transition: 0.15s;
+}
+.files-container:hover{
+    box-shadow: 0px 0px 20px 0px rgb(153, 82, 166)
+
+}
+.file-name{
+    font-size: 11px ;
+    font-weight: bold;
+    color: rgb(233, 220, 245);
+    margin-bottom: 5px;
+
+}
+.file-metadata{
+    display: flex;
+}
+.file-path{
+    font-size: 7px;
+    color:  rgb(154, 146, 162);;
+    font-style: italic;
+    margin-bottom: 5px;
+    margin-right: 5px;
+    flex: 2;
+    display: inline-block;
+}
+.file-size{
+    color:  rgb(154, 146, 162);;
+    font-size: 7px;
+    margin-bottom: 5px;
+    display: inline-block;
+    text-align: right;
+    font-weight: bold;
+    font-style: italic;
+
+}
+
+.button-container{
+    display: flex;
+}
+.search-bar {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: rgb(72, 71, 72);
+    color: rgb(233, 220, 245);
+    border-radius: 2px;
+    padding: 3px;
+}
+button {
+    background-color: rgb(84, 25, 139);
+    color: rgb(202, 167, 235);
+    border: none;
+    border-radius: 5px;
+    justify-content: center;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 5px;
+    transition: 0.15s;
+    padding: 5px;
+    font-size: 10px;
+}
+button:hover{
+    background-color: rgb(63, 19, 103);
+}
+button:active{
+    background-color: rgb(56, 16, 93);
+}
