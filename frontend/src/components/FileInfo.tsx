@@ -10,11 +10,14 @@ interface File{
     modified: string
 }
 
-function SearchBar(props: {updateFilter: React.Dispatch<React.SetStateAction<string>>}){
+function SearchBar(props: {setFilter: React.Dispatch<React.SetStateAction<string>>}){
     const [searchText, setSearchText] = useState("");
     function handleSearchChange(e: {target: {value: string}}){
-        setSearchText(e.target.value);
-        props.updateFilter(searchText);
+        const newValue = e.target.value;
+        setSearchText(newValue);
+        props.setFilter(newValue);
+        console.log(`filter from handleSearchChange() =  ${searchText}`);
+        console.log(`e.target.value from handleSearchChange() =  ${e.target.value}`);
     }
     return(
         <div className="search-bar-container">
@@ -33,7 +36,7 @@ function FileContainer(props: {folder: string, file: File}){
                 <div className="file-size">Size: {file.size_mb} MB</div>
             </div>
             <div className="button-container">
-                <a href={`/download/${props.folder}/${encodeURIComponent(file.name)}`}>Download</a>
+                <a className="download-button" href={`/download/${props.folder}/${encodeURIComponent(file.name)}`}>Download</a>
             </div>
         </div>
 
@@ -41,10 +44,12 @@ function FileContainer(props: {folder: string, file: File}){
 }
 
 function FileList(props: {files: File[], folderName:string, filter: string}){
+    console.log(`filter from FileList() = ${props.filter}`);
     let filteredFiles = props.files.filter((file)=> file.name.toLowerCase().includes(props.filter));
     if(filteredFiles.length == 0){
         return (
             <>
+            <div>Busca alguito que exista</div>
                 {
                     props.files.map((file) =>
                     <FileContainer key={file.name} file={file} folder={props.folderName}/>
@@ -65,8 +70,6 @@ function FileList(props: {files: File[], folderName:string, filter: string}){
     }
     
 }
-//Corregir : no queremos que llame a la api cada que se modifica el filtro, 
-// solo queremos que se filtre cada que se modifica el filtro
 // solo busca hasta que hayd dos segundo caracter?
 function FileInfo(props: {folderName: string}){
     const [searchFilter, setSearchFilter] = useState("");
@@ -90,7 +93,7 @@ function FileInfo(props: {folderName: string}){
 
     return(
         <>
-            <SearchBar updateFilter={setSearchFilter}/>
+            <SearchBar setFilter={setSearchFilter}/>
             <FileList files={files} filter={searchFilter} folderName={props.folderName}/>
         </>
     )
