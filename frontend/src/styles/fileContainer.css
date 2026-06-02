@@ -11,7 +11,7 @@
     transition: 0.15s;
 }
 .files-container:hover{
-    box-shadow: 0px 0px 20px 0px rgb(153, 82, 166)
+    box-shadow: 0px 0px 30px 2px rgba(170, 116, 220, 0.504);
 
 }
 .file-name{
@@ -47,16 +47,7 @@
 .button-container{
     display: flex;
 }
-.search-bar {
-    margin-top: 20px;
-    margin-bottom: 10px;
-    margin-left: auto;
-    margin-right: auto;
-    background-color: rgb(72, 71, 72);
-    color: rgb(233, 220, 245);
-    border-radius: 2px;
-    padding: 3px;
-}
+
 button {
     background-color: rgb(84, 25, 139);
     color: rgb(202, 167, 235);
@@ -71,7 +62,7 @@ button {
     font-size: 10px;
 }
 button:hover{
-    background-color: rgb(63, 19, 103);
+    background-color: rgba(170, 116, 220, 0.504);
 }
 button:active{
     background-color: rgb(56, 16, 93);
