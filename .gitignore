@@ -4,6 +4,8 @@ frontend/dist/
 frontend/.vscode/
 frontend/.idea
 
+config.txt
+
 
 # rust
 target/
