@@ -14,6 +14,8 @@ use tower_http::trace::TraceLayer;
 use tower_http::services::ServeDir;
 use walkdir::WalkDir;
 use once_cell::sync::Lazy;
+use std::env;
+use std::fs;
 
 #[derive(Serialize)]
 struct FileInfo {
@@ -24,24 +26,35 @@ struct FileInfo {
     modified: String,
 }
 
-const AUDIO_DIR: &str = "/home/dunishaaa/media/audios";
-const VIDEO_DIR: &str = "/home/dunishaaa/media/videos";
-const BOOKS_DIR: &str = "/home/dunishaaa/media/books";
-const RANDOM_DIR: &str = "/home/dunishaaa/media/random";
+struct FolderInfo{
+    path: String,
+    name: String,
+}
 
-static FOLDERS: Lazy<HashMap<&'static str, PathBuf>> = Lazy::new(|| {
+
+const CONFIG_PATH: &str = "./config.txt";
+
+static FOLDERS: Lazy<HashMap<String, PathBuf>> = Lazy::new(|| {
     let mut m = HashMap::new();
-    m.insert("audios", PathBuf::from(AUDIO_DIR));
-    m.insert("videos", PathBuf::from(VIDEO_DIR));
-    m.insert("books", PathBuf::from(BOOKS_DIR));
-    m.insert("random", PathBuf::from(RANDOM_DIR));
+    let allowed_folders = parse_config();
+    for folder in allowed_folders {
+        let folder_name: Vec<&str> = folder.rsplit('/').collect();
+        m.insert(folder_name[0].to_string(), PathBuf::from(&folder));
+    }
     m
 });
 
+fn parse_config() -> Vec<String>{
+    let mut folders: Vec<String> = vec![];
+    let contents = fs::read_to_string(CONFIG_PATH).expect(format!("Unable to read config file at {}", CONFIG_PATH).as_str());
+    folders = contents.split('\n').map(|x| x.to_string()).collect();
+    println!("{:?}", folders);
+    folders
+}
 async fn list_folders() -> Json<HashMap<String, Vec<String>>> {
     println!("Listing folders...");
     let mut response = HashMap::new();
-    let folders: Vec<String> = FOLDERS.keys().map(|&k| k.to_string()).collect();
+    let folders: Vec<String> = FOLDERS.keys().map(|x| x.to_string()).collect();
     response.insert("names".to_string(), folders);
     Json(response)
 }
@@ -109,9 +122,10 @@ async fn list_files(
 
 #[tokio::main]
 async fn main(){
+    parse_config();
     tracing_subscriber::fmt::init();
 
-    let IP_ADDR= "192.168.1.80";
+    let ip_addr= "192.168.1.80";
     let PORT = "3000";
     let local_ip = get_local_ip().unwrap_or_else(|| "127.0.0.1".to_string());
 

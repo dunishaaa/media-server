@@ -1,4 +1,3 @@
 /home/dunishaaa/media/audios
 /home/dunishaaa/media/videos
 /home/dunishaaa/media/books
-/home/dunishaaa/media/random
