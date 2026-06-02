@@ -1,12 +1,11 @@
 use axum::{
     Json, Router,
     extract::{Path, Query},
-    http::{Response, StatusCode, Uri, header},
-    response::{IntoResponse },
-    routing::get, serve::{self, Listener},
+    http::{ StatusCode},
+    routing::get, 
 };
 use core::{convert::From, result::Result};
-use serde::{Deserialize, Serialize};
+use serde::{Serialize};
 use std::collections::HashMap;
 use std::path::PathBuf;
 use tower_http::{cors::{Any, CorsLayer}};
@@ -14,7 +13,6 @@ use tower_http::trace::TraceLayer;
 use tower_http::services::ServeDir;
 use walkdir::WalkDir;
 use once_cell::sync::Lazy;
-use std::env;
 use std::fs;
 
 #[derive(Serialize)]
@@ -25,12 +23,6 @@ struct FileInfo {
     path: String,
     modified: String,
 }
-
-struct FolderInfo{
-    path: String,
-    name: String,
-}
-
 
 const CONFIG_PATH: &str = "./config.txt";
 
@@ -125,8 +117,8 @@ async fn main(){
     parse_config();
     tracing_subscriber::fmt::init();
 
-    let ip_addr= "192.168.1.80";
-    let PORT = "3000";
+    let _ip_addr= "192.168.1.80";
+    let port= "3000";
     let local_ip = get_local_ip().unwrap_or_else(|| "127.0.0.1".to_string());
 
     let cors = CorsLayer::new()
@@ -138,24 +130,31 @@ async fn main(){
         .route("/folders", get(list_folders))
         .route("/files/{folder}", get(list_files));
 
-    let app = Router::new()
+    let mut app = Router::new()
         .nest("/api", api)
-        .nest_service("/download", ServeDir::new(VIDEO_DIR))
         .layer(cors)
         .layer(TraceLayer::new_for_http())
         .fallback_service(
             ServeDir::new("./frontend/dist")
             .append_index_html_on_directories(true)
         );
+    
+    for (folder_name, path) in FOLDERS.iter() {
+        let temp = format!("/download/{}", &folder_name[..]);
+        app = app.nest_service(
+            &temp,
+            ServeDir::new(path)
+        );
+    }
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000")
         .await
         .unwrap(); 
 
     println!("Servidor corriendo en: "); 
-    println!("   - Local: http://localhost:{}", PORT);
-    println!("   - Red: http://{}:{}", local_ip, PORT);
-    println!("documentacion auto en http://{}:{}/ ", local_ip, PORT);
+    println!("   - Local: http://localhost:{}", port);
+    println!("   - Red: http://{}:{}", local_ip, port);
+    println!("documentacion auto en http://{}:{}/ ", local_ip, port);
     axum::serve(listener, app).await.unwrap();
 }
 
