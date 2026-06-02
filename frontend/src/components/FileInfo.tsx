@@ -41,7 +41,6 @@ function FileContainer(props: {folder: string, file: File}){
 }
 
 function FileList(props: {files: File[], folderName:string, filter: string}){
-    console.log(`Filter from fileList: ${props.filter}`);
     let filteredFiles = props.files.filter((file)=> file.name.toLowerCase().includes(props.filter));
     if(filteredFiles.length == 0){
         return (
@@ -88,7 +87,6 @@ function FileInfo(props: {folderName: string}){
         }
         fetchFileInfo();
     }, []);
-    console.log(files);
 
     return(
         <>
