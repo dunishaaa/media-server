@@ -8,7 +8,7 @@ interface File{
     path: string
     modified: string
 }
-function FileContainer(props: {file: File}){
+function FileContainer(props: {folder: string, file: File}){
 
     let file = props.file;
     return(
@@ -19,7 +19,7 @@ function FileContainer(props: {file: File}){
                 <div className="file-size">Size: {file.size_mb} MB</div>
             </div>
             <div className="button-container">
-                <button>Download</button>
+                <a href={`/download/${props.folder}/${encodeURIComponent(file.name)}`}>Download</a>
             </div>
         </div>
 
@@ -46,7 +46,7 @@ function FolderList(props: {folderName:string}){
     return (
         <>
             {files?.map((file) =>
-                <FileContainer key={file.name} file={file}/>
+                <FileContainer key={file.name} file={file} folder={props.folderName}/>
             )}
         </>
     )
