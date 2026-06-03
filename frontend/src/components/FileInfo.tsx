@@ -36,7 +36,7 @@ function FileContainer(props: {folder: string, file: File}){
                 <div className="file-size">Size: {file.size_mb} MB</div>
             </div>
             <div className="button-container">
-                <a className="download-button" href={`/download/${props.folder}/${encodeURIComponent(file.name)}`}>Download</a>
+                <a className="download-button" download={file.name} href={`/download/${props.folder}/${encodeURIComponent(file.name)}`}>Download</a>
             </div>
         </div>
 
