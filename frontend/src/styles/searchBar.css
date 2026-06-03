@@ -1,0 +1,22 @@
+.search-bar-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+.search-bar {
+    all: unset;
+    margin: 10px;
+    background-color: rgba(37, 30, 44, 0.741);
+    color: rgb(233, 220, 245);
+    border-radius: 30px;
+    padding: 8px;
+    padding-left: 15px;
+    border-width: 2px;
+    border-color: rgba(170, 116, 220, 0.504);
+    transition: 0.3s;
+}
+
+.search-bar:hover{
+    box-shadow: 0px 5px 10px -5px rgba(56, 1, 71, 0.45);
+    transform: scale(1.05);
+}
