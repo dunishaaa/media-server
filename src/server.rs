@@ -8,7 +8,7 @@ use crate::file_explorer;
 pub async fn list_folders() -> Json<HashMap<String, Vec<String>>> {
     println!("Listing folders...");
     let mut response = HashMap::new();
-    let folders: Vec<String> = file_explorer::get_folders();
+    let folders: Vec<String> = file_explorer::get_folder_names();
     response.insert("names".to_string(), folders);
     Json(response)
 }
@@ -29,7 +29,6 @@ pub async fn list_files(
     files.sort_by(|a, b| a.name.cmp(&b.name));
 
     Ok(Json(files))
-
 }
 
 

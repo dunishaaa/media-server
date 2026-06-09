@@ -25,6 +25,9 @@ pub static FOLDERS: Lazy<HashMap<String, PathBuf>> =  Lazy::new(|| {
     }
     m
 });
+//pub fn get_folders() -> Lazy<HashMap<String, PathBuf>>{
+//    FOLDERS
+//}
 
 fn get_valid_folders() -> Vec<String> {
     let allowed_folders = config::parse_config();
@@ -37,11 +40,10 @@ fn get_valid_folders() -> Vec<String> {
             println!("{} doesn't exists", folder);
         }
     }
-
     valid_folders
 }
 
-pub fn get_folders() -> Vec<String>{
+pub fn get_folder_names() -> Vec<String>{
     FOLDERS.keys()
         .map(|x| x.to_string())
         .collect()
