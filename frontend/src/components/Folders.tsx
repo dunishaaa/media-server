@@ -1,25 +1,31 @@
 import { useEffect, useState } from "react";
 import "../styles/folder.css"
+import { useNavigate } from "react-router-dom";
 
 interface Folders{
   names: string[]
 }
-function FolderBox(props: { folderName: string, onSelectFolder: (folderName: string) => void}){
+function FolderBox(props: { folderName: string}){
+    const navigate = useNavigate();
     return (
-    <div className="box-container" onClick={() => props.onSelectFolder(props.folderName)}>
-        <h2>{props.folderName}</h2>
+    <div className="box-container" onClick={() => navigate(`/media/${props.folderName}`)}>
+        <h2>{props.folderName.toLowerCase()}</h2>
     </div>
     );
 }
 
-function FolderGrid(props: {onSelectFolder: (folderName: string) => void}){
+function FolderGrid(){
   const [folders, setFolders] = useState<Folders>();
   const [_, setLoading] = useState(true);
+  const IP = import.meta.env.VITE_IP;
+  const PORT = import.meta.env.VITE_PORT;
+
 
   useEffect(() => {
     async function fetchFolders() {
       try{
-        const response = await fetch("http://192.168.1.80:3000/api/folders");
+        const response = await fetch(`http://${IP}:${PORT}/api/folders`);
+        //const response = await fetch(`http://192.168.1.107:3000/api/folders`);
 
         if(!response.ok){
           throw new Error("Faled to fetch folders");
@@ -39,17 +45,17 @@ function FolderGrid(props: {onSelectFolder: (folderName: string) => void}){
   return (
     <>
       {folders?.names.map((folder) =>
-        <FolderBox key={folder} folderName={folder} onSelectFolder={props.onSelectFolder}/>
+        <FolderBox key={folder} folderName={folder} />
       )}
     </>
   );
 }
-function FoldersPage(props: {onSelectFolder: (folderName: string) => void}){
+function FoldersPage(){
   return(
     <div>
       <h1 className="description-text">Select type of file to download</h1>
       <div className="container">
-        <FolderGrid onSelectFolder={props.onSelectFolder}/>
+        <FolderGrid/>
       </div>
     </div>
 

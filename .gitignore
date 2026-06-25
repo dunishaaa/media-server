@@ -6,7 +6,10 @@ frontend/.idea
 
 config.txt
 
-
+*.env*
+*.mp4
+*.webm
+*.m4a
 # rust
 target/
 

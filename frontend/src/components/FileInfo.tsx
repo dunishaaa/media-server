@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react"
 import "../styles/fileContainer.css"
 import "../styles/searchBar.css"
+import Home from "./HomeButton"
+import { useParams } from "react-router-dom"
 
 interface File{
     name: string
@@ -28,6 +30,7 @@ function SearchBar(props: {setFilter: React.Dispatch<React.SetStateAction<string
 
 function FileContainer(props: {folder: string, file: File}){
     let file = props.file;
+    console.log("From file container -> " + props.folder)
     return(
         <div className="files-container">
             <div className="file-name">{file.name}</div>
@@ -45,6 +48,7 @@ function FileContainer(props: {folder: string, file: File}){
 
 function FileList(props: {files: File[], folderName:string, filter: string}){
     console.log(`filter from FileList() = ${props.filter}`);
+    console.log(`folderName from FileList() = ${props.folderName}`);
     let filteredFiles = props.files.filter((file)=> file.name.toLowerCase().includes(props.filter));
     if(filteredFiles.length == 0){
         return (
@@ -71,14 +75,20 @@ function FileList(props: {files: File[], folderName:string, filter: string}){
     
 }
 // solo busca hasta que hayd dos segundo caracter?
-function FileInfo(props: {folderName: string}){
+function FileInfo(){
+    const {folderPath} = useParams();
     const [searchFilter, setSearchFilter] = useState("");
     const [files, setFiles] = useState<File[]>([]);
+
+    const IP = import.meta.env.VITE_IP;
+    const PORT = import.meta.env.VITE_PORT;
+
+    console.log("From fileInfo -> " + folderPath)
 
     useEffect(() => {
         async function fetchFileInfo(){
             try{
-                const response = await fetch(`http://192.168.1.80:3000/api/files/${props.folderName}`);
+                const response = await fetch(`http://${IP}:${PORT}/api/files/${folderPath}`);
                 if(!response.ok){
                     throw new Error("Failed to fetch media names");
                 }
@@ -93,8 +103,9 @@ function FileInfo(props: {folderName: string}){
 
     return(
         <>
+            <Home/>
             <SearchBar setFilter={setSearchFilter}/>
-            <FileList files={files} filter={searchFilter} folderName={props.folderName}/>
+            <FileList files={files} filter={searchFilter} folderName={folderPath!}/>
         </>
     )
 }

@@ -1,34 +1,23 @@
 
+import { BrowserRouter, Route, Routes} from "react-router-dom";
 import "./styles/index.css"
-import FoldersPage from "./components/Folders"
-import FileInfo from "./components/FileInfo";
-import { useState } from "react";
+import { lazy, Suspense} from "react";
 
+const FoldersPage = lazy(() => import("./components/Folders"));
+const FileInfo = lazy(() => import("./components/FileInfo"));
 
 function App() {
-  const [screen, setScreen] =  useState("folders");
-  const [folder, setFolderPath] =  useState("folders");
-  const handleSelectFolder = (folderPath: string) => {
-    console.log("clicked from " + folderPath)
-    setScreen("media");
-    setFolderPath(folderPath)
-  }
-
-  switch(screen){
-    case 'folders':
-      return (
-        <FoldersPage onSelectFolder={handleSelectFolder}/>
-      );
-      break;
-    case 'media':
-      return (
-        <FileInfo folderName={folder}/>
-      );
-      break;
-    default:
-      return (<FoldersPage onSelectFolder={handleSelectFolder}/>)
-      break;
-  }
+  return (
+    <BrowserRouter>
+      <Suspense fallback={<div className="loading"> Loading...</div>}>
+        <Routes>
+          <Route path="/" element={<FoldersPage />} />
+          <Route path="/media/:folderPath" element={<FileInfo/>} />
+          <Route path="*" element={<div>Page not found</div>} />
+        </Routes>
+      </Suspense>
+    </BrowserRouter>
+  );
 }
 
 export default App
