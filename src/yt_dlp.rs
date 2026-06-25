@@ -1,10 +1,10 @@
-use std::process::Command;
+use std::{io::{BufRead, BufReader, Error, ErrorKind}, process::{Command, Stdio}};
+
 struct Video{
     url: String,
     extension: String,
     filters: Vec<String>
 }
-//yt-dlp --progress-template "%(progress._percent)s|%(progress.downloaded_bytes)s|%(progress.total_bytes)s"
 struct Audio{
     url: String,
     extension: String,
@@ -26,27 +26,24 @@ impl Downloadable for Audio {
 
     }
 }
-
-
-pub fn test(){
-    let output = Command::new("yt-dlp")
+//yt-dlp --progress-template "%(progress._percent)s|%(progress.downloaded_bytes)s|%(progress.total_bytes)s"
+pub fn test() -> Result<(), Error>{
+    let stdout= Command::new("yt-dlp")
+        .arg("--progress-template")
+        .arg("down-prog: %(progress._percent)s|%(progress.downloaded_bytes)s|%(progress.total_bytes)s")
         .arg("-f")
         .arg("bv[ext=mp4]")
         .arg("https://www.youtube.com/watch?v=u18be_kRmC0")
-        .output()
-        .expect("Failed to execute command");
-    let stdout = String::from_utf8_lossy(&output.stdout);
-    println!("{:}", stdout);
-}
+        .stdout(Stdio::piped())
+        .spawn()?
+        .stdout
+        .ok_or_else(|| Error::new(ErrorKind::Other, "Could not read standard output."))?; 
 
-pub fn get_available_formats(){
-
-}
-
-pub fn download_video(){
-
-}
-
-pub fn download_audio(){
-
+    let reader = BufReader::new(stdout);
+    reader
+        .lines()
+        .filter_map(|line| line.ok())
+       // .filter(|line| line.find("down-prog: ").is_some())
+        .for_each(|line| println!("{:}", line));
+    Ok(())
 }

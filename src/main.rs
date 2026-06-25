@@ -19,7 +19,7 @@ async fn main(){
 
     tracing_subscriber::fmt::init();
 
-    //yt_dlp::test();
+    let _ = yt_dlp::test();
 
     let _ = config::write_ip();
     let local_ip = local_ip().unwrap();
