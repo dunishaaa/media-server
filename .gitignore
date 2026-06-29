@@ -7,6 +7,7 @@ frontend/.idea
 config.txt
 
 *.env*
+*.part
 *.mp4
 *.webm
 *.m4a

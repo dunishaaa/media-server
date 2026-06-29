@@ -1,20 +1,23 @@
-use std::{io::{BufRead, BufReader, Error, ErrorKind}, process::{Command, Stdio}};
+use std::{
+    io::{BufReader, Error, Read, Write},
+    process::{Command, Stdio},
+};
 
-struct Video{
+struct Video {
     url: String,
     extension: String,
-    filters: Vec<String>
+    filters: Vec<String>,
 }
-struct Audio{
+struct Audio {
     url: String,
     extension: String,
 }
-trait Downloadable{
+trait Downloadable {
     fn download(&self);
 }
 
 impl Downloadable for Video {
-    fn download(&self){
+    fn download(&self) {
         let output = Command::new("yt-dlp")
             .arg(&self.url)
             .output()
@@ -22,28 +25,43 @@ impl Downloadable for Video {
     }
 }
 impl Downloadable for Audio {
-    fn download(&self){
-
-    }
+    fn download(&self) {}
+}
+pub fn build_download_command() -> &mut Command {
+    let args = vec![
+        "--progress-template",
+        "down-prog: %(progress._percent)s|%(progress.downloaded_bytes)s|%(progress.total_bytes)s",
+        "-f",
+    ];
+    let mut child = Command::new("yt-dlp").args(args);
+    child
 }
 //yt-dlp --progress-template "%(progress._percent)s|%(progress.downloaded_bytes)s|%(progress.total_bytes)s"
-pub fn test() -> Result<(), Error>{
-    let stdout= Command::new("yt-dlp")
+pub fn test(link: String) -> Result<(), Error> {
+    let mut child = Command::new("yt-dlp")
         .arg("--progress-template")
         .arg("down-prog: %(progress._percent)s|%(progress.downloaded_bytes)s|%(progress.total_bytes)s")
         .arg("-f")
         .arg("bv[ext=mp4]")
-        .arg("https://www.youtube.com/watch?v=u18be_kRmC0")
+        .arg(link)
         .stdout(Stdio::piped())
-        .spawn()?
+        .spawn()?;
+
+    let stdout = child
         .stdout
-        .ok_or_else(|| Error::new(ErrorKind::Other, "Could not read standard output."))?; 
+        .take()
+        .ok_or_else(|| "Coult not read standard output.")
+        .unwrap();
 
     let reader = BufReader::new(stdout);
-    reader
-        .lines()
-        .filter_map(|line| line.ok())
-       // .filter(|line| line.find("down-prog: ").is_some())
-        .for_each(|line| println!("{:}", line));
+    for byte in reader.bytes() {
+        if let Ok(b) = byte {
+            if b == b'\r' || b == b'\n' {
+                continue;
+            }
+            print!("{}", b as char);
+            std::io::stdout().flush()?;
+        }
+    }
     Ok(())
 }
