@@ -3,39 +3,47 @@ use std::{
     process::{Command, Stdio},
 };
 
-struct Video {
-    url: String,
-    extension: String,
-    filters: Vec<String>,
+struct Video<'a> {
+    url: &'a str,
+    extension: &'a str,
+    specs: Vec<&'a str>,
 }
-struct Audio {
-    url: String,
-    extension: String,
+struct Audio<'a> {
+    url: &'a str,
+    extension: &'a str,
+    specs: Vec<&'a str>,
 }
 trait Downloadable {
-    fn download(&self);
+    fn download(&self) {
+        let command = self.build_download_command();
+    }
+
+    fn build_download_command(&self) -> &mut Command;
 }
 
 impl Downloadable for Video {
-    fn download(&self) {
-        let output = Command::new("yt-dlp")
-            .arg(&self.url)
-            .output()
-            .expect("Failed to download video");
+    fn build_download_command(&self) -> &mut Command {
+        let config = vec![
+            "--progress-template",
+            "down-prog: %(progress._percent)s|%(progress.downloaded_bytes)s|%(progress.total_bytes)s",
+            self.url
+        ];
+        Command::new("yt-dlp").args(config)
     }
 }
 impl Downloadable for Audio {
-    fn download(&self) {}
+    fn build_download_command(&self) -> &mut Command {
+        let mut config = vec![
+            "--progress-template",
+            "down-prog: %(progress._percent)s|%(progress.downloaded_bytes)s|%(progress.total_bytes)s",
+            "-f",
+            "ba[ext=m4a]/ba",
+            self.url
+        ];
+        Command::new("yt-dlp").args(config)
+    }
 }
-pub fn build_download_command() -> &mut Command {
-    let args = vec![
-        "--progress-template",
-        "down-prog: %(progress._percent)s|%(progress.downloaded_bytes)s|%(progress.total_bytes)s",
-        "-f",
-    ];
-    let mut child = Command::new("yt-dlp").args(args);
-    child
-}
+
 //yt-dlp --progress-template "%(progress._percent)s|%(progress.downloaded_bytes)s|%(progress.total_bytes)s"
 pub fn test(link: String) -> Result<(), Error> {
     let mut child = Command::new("yt-dlp")
