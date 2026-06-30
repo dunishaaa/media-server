@@ -2,45 +2,86 @@ use std::{
     io::{BufReader, Error, Read, Write},
     process::{Command, Stdio},
 };
+static PROGRESS_FORMAT: &str =
+    "down-prog: %(progress._percent)s|%(progress.downloaded_bytes)s|%(progress.total_bytes)s";
 
-struct Video<'a> {
-    url: &'a str,
-    extension: &'a str,
-    specs: Vec<&'a str>,
+pub struct Video<'a> {
+    pub url: &'a str,
+    pub extension: &'a str,
+    pub command: Command,
 }
-struct Audio<'a> {
-    url: &'a str,
-    extension: &'a str,
-    specs: Vec<&'a str>,
+pub struct Audio<'a> {
+    pub url: &'a str,
+    pub extension: &'a str,
+    pub command: Command,
 }
-trait Downloadable {
-    fn download(&self) {
-        let command = self.build_download_command();
+pub trait Downloadable {
+    fn download(&mut self) -> Result<(), Error>;
+
+    fn build_download_command(&mut self);
+}
+
+impl<'a> Downloadable for Video<'a> {
+    fn download(&mut self) -> Result<(), Error> {
+        self.build_download_command();
+        let mut child = self.command.stdout(Stdio::piped()).spawn()?;
+
+        let stdout = child
+            .stdout
+            .take()
+            .ok_or_else(|| "Coult not read standard output.")
+            .unwrap();
+
+        let reader = BufReader::new(stdout);
+        for byte in reader.bytes() {
+            if let Ok(b) = byte {
+                if b == b'\r' || b == b'\n' {
+                    continue;
+                }
+                print!("{}", b as char);
+                std::io::stdout().flush()?;
+            }
+        }
+        Ok(())
+    }
+    fn build_download_command(&mut self) {
+        let config = vec!["--progress-template", PROGRESS_FORMAT, self.url];
+        self.command.args(config);
+    }
+}
+impl<'a> Downloadable for Audio<'a> {
+    fn download(&mut self) -> Result<(), Error> {
+        self.build_download_command();
+        let mut child = self.command.stdout(Stdio::piped()).spawn()?;
+
+        let stdout = child
+            .stdout
+            .take()
+            .ok_or_else(|| "Coult not read standard output.")
+            .unwrap();
+
+        let reader = BufReader::new(stdout);
+        for byte in reader.bytes() {
+            if let Ok(b) = byte {
+                if b == b'\r' || b == b'\n' {
+                    continue;
+                }
+                print!("{}", b as char);
+                std::io::stdout().flush()?;
+            }
+        }
+        Ok(())
     }
 
-    fn build_download_command(&self) -> &mut Command;
-}
-
-impl Downloadable for Video {
-    fn build_download_command(&self) -> &mut Command {
+    fn build_download_command(&mut self) {
         let config = vec![
             "--progress-template",
-            "down-prog: %(progress._percent)s|%(progress.downloaded_bytes)s|%(progress.total_bytes)s",
-            self.url
-        ];
-        Command::new("yt-dlp").args(config)
-    }
-}
-impl Downloadable for Audio {
-    fn build_download_command(&self) -> &mut Command {
-        let mut config = vec![
-            "--progress-template",
-            "down-prog: %(progress._percent)s|%(progress.downloaded_bytes)s|%(progress.total_bytes)s",
+            PROGRESS_FORMAT,
             "-f",
             "ba[ext=m4a]/ba",
-            self.url
+            self.url,
         ];
-        Command::new("yt-dlp").args(config)
+        self.command.args(config);
     }
 }
 
