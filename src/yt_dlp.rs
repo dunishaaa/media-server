@@ -4,70 +4,56 @@ use std::{
 };
 static PROGRESS_FORMAT: &str =
     "my_format|%(progress._percent)s|%(progress.downloaded_bytes)s|%(progress.total_bytes)s";
+static OUTPUT_NAME_FORMAT: &str = "%(uploader)s-%(title)s.%(ext)s";
 
-enum MediaType {
+pub enum MediaType {
     VIDEO,
     AUDIO,
 }
 
-pub struct DownloadableMedia<T: Download> {
-    pub media: T,
-    pub media_type: MediaType,
+pub struct Media<'a> {
+    media_type: MediaType,
+    quality: &'a str,
+    url: &'a str,
+    extension: &'a str,
+    download_path: &'a str,
+    command: Command,
 }
 
-pub struct Video<'a> {
-    pub url: &'a str,
-    pub extension: &'a str,
-    pub command: Command,
-}
-pub struct Audio<'a> {
-    pub url: &'a str,
-    pub extension: &'a str,
-    pub command: Command,
-}
 pub trait Download {
     fn download(&mut self) -> Result<(), Error>;
-
     fn build_download_command(&mut self);
 }
 
-impl<'a> Download for Video<'a> {
-    fn download(&mut self) -> Result<(), Error> {
-        self.build_download_command();
-        let mut child = self.command.stdout(Stdio::piped()).spawn()?;
-
-        let stdout = child
-            .stdout
-            .take()
-            .ok_or_else(|| "Coult not read standard output.")
-            .unwrap();
-
-        let reader = BufReader::new(stdout);
-        for byte in reader.bytes() {
-            if let Ok(b) = byte {
-                if b == b'\r' || b == b'\n' {
-                    continue;
-                }
-                print!("{}", b as char);
-                std::io::stdout().flush()?;
-            }
+impl<'a> Media<'a> {
+    pub fn new(
+        media_type: MediaType,
+        quality: &'a str,
+        url: &'a str,
+        extension: &'a str,
+        download_path: &'a str,
+    ) -> Self {
+        Media {
+            media_type,
+            quality,
+            url,
+            extension,
+            download_path,
+            command: Command::new("yt-dlp"),
         }
-        Ok(())
-    }
-    fn build_download_command(&mut self) {
-        let config = vec!["--progress-template", PROGRESS_FORMAT, self.url];
-        self.command.args(config);
     }
 }
-impl<'a> Download for Audio<'a> {
+
+impl<'a> Download for Media<'a> {
     fn download(&mut self) -> Result<(), Error> {
         self.build_download_command();
+
         let mut child = self.command.stdout(Stdio::piped()).spawn()?;
 
         let stdout = child
             .stdout
             .take()
-            .ok_or_else(|| "Coult not read standard output.")
+            .ok_or_else(|| "Could not read standard output.")
             .unwrap();
 
         let reader = BufReader::new(stdout);
@@ -80,17 +66,33 @@ impl<'a> Download for Audio<'a> {
                 std::io::stdout().flush()?;
             }
         }
+
         Ok(())
     }
-
     fn build_download_command(&mut self) {
-        let config = vec![
+        println!("Building download command...");
+        let mut config = vec![
+            "-P",
+            "/home/dunishaaa/media/prueba/",
+            "-o",
+            OUTPUT_NAME_FORMAT,
             "--progress-template",
             PROGRESS_FORMAT,
             "-f",
-            "ba[ext=m4a]/ba",
-            self.url,
         ];
+        let format = match self.media_type {
+            MediaType::VIDEO => "bv[ext=mp4][height<=720]+ba/bv+ba",
+            MediaType::AUDIO => "ba[ext=m4a]/ba",
+        };
+
+        config.push(format);
+        config.push(self.url);
+        print!("Built command: ");
+        for token in &config {
+            print!("{} ", token);
+        }
+        println!();
+
         self.command.args(config);
     }
 }
@@ -109,7 +111,7 @@ pub fn test(link: String) -> Result<(), Error> {
     let stdout = child
         .stdout
         .take()
-        .ok_or_else(|| "Coult not read standard output.")
+        .ok_or_else(|| "Could not read standard output.")
         .unwrap();
     let mut current_progress_string = String::new();
 
