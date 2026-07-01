@@ -2,7 +2,8 @@
 
 use axum::{
     Router,
-    routing::get, 
+    routing::get,
+    routing::post,
 };
 use tower_http::cors::{AllowOrigin, Any, CorsLayer};
 use tower_http::trace::TraceLayer;
@@ -34,7 +35,7 @@ async fn main(){
     let api = Router::new()
         .route("/folders", get(server::list_folders))
         .route("/files/{folder}", get(server::list_files))
-        .route("/download/youtube", get(server::download_video));
+        .route("/download/youtube", post(server::download_video));
 
     let mut app = Router::new()
         .nest("/api", api)

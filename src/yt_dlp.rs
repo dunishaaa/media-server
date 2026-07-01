@@ -20,6 +20,38 @@ pub struct Media<'a> {
     download_path: &'a str,
     command: Command,
 }
+pub trait Download {
+    fn download(&mut self) -> Result<(), Error>;
+}
+
+impl<'a> Download for Media<'a> {
+    fn download(&mut self) -> Result<(), Error> {
+        let mut child = self.command.stdout(Stdio::piped()).spawn()?;
+
+        let stdout = child
+            .stdout
+            .take()
+            .ok_or_else(|| "Could not read standard output.")
+            .unwrap();
+
+        let reader = BufReader::new(stdout);
+        let mut current_progress_string = String::new();
+
+        for byte in reader.bytes() {
+            if let Ok(b) = byte {
+                if b == b'\n' {
+                    current_progress_string.clear();
+                } else if b == b'\r' {
+                    print!("{}\r", current_progress_string);
+                }
+                current_progress_string.push(b as char);
+                std::io::stdout().flush()?;
+            }
+        }
+        println!();
+        Ok(())
+    }
+}
 
 impl<'a> Media<'a> {
     pub fn new(
@@ -46,13 +78,13 @@ impl<'a> Media<'a> {
         println!("Building download command...");
         let format = match self.media_type {
             MediaType::VIDEO => {
-                let _ = format!(
-                    "bv[ext={}][height<={}]+ba/bv+ba",
-                    self.extension, self.height_quality
-                );
-                "bv[ext=mp4][height<=720]+ba/bv+ba"
+                format!(
+                    "bv[ext={}][height<={}]+ba/bv[height<={}]+ba/bv+ba",
+                    self.extension, self.height_quality, self.height_quality
+                )
+                //"bv[ext=mp4][height<=720]+ba/bv+ba"
             }
-            MediaType::AUDIO => "ba[ext=m4a]/ba",
+            MediaType::AUDIO => "ba[ext=m4a]/ba".to_string(),
         };
 
         let config = vec![
@@ -63,42 +95,16 @@ impl<'a> Media<'a> {
             "--progress-template",
             PROGRESS_FORMAT,
             "-f",
-            format,
+            &format,
             self.url,
         ];
 
-        print!("Built command: ");
+        println!("Built command: ");
         for token in &config {
             print!("{} ", token);
         }
         println!();
 
         self.command.args(config);
-    }
-
-    pub fn download(&mut self) -> Result<(), Error> {
-        let mut child = self.command.stdout(Stdio::piped()).spawn()?;
-
-        let stdout = child
-            .stdout
-            .take()
-            .ok_or_else(|| "Could not read standard output.")
-            .unwrap();
-
-        let reader = BufReader::new(stdout);
-        let mut current_progress_string = String::new();
-
-        for byte in reader.bytes() {
-            if let Ok(b) = byte {
-                if b == b'\n' {
-                    current_progress_string.clear();
-                } else if b == b'\r' {
-                    print!("{}", current_progress_string);
-                }
-                current_progress_string.push(b as char);
-                std::io::stdout().flush()?;
-            }
-        }
-        Ok(())
     }
 }

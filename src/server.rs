@@ -6,6 +6,7 @@ use std::{collections::HashMap};
 
 use crate::file_explorer;
 use crate::yt_dlp;
+use crate::yt_dlp::Download;
 
 pub async fn list_folders() -> Json<HashMap<String, Vec<String>>> {
     println!("Listing folders...");
@@ -49,7 +50,7 @@ pub struct Media {
 
 
 pub async fn download_video(
-    Json(payload): Json<Media<>>,
+    Json(payload): Json<Media>,
 ) -> Result<(), (StatusCode, String)>{
     let media_type = match payload.media_type {
         MediaType::VIDEO => yt_dlp::MediaType::VIDEO,
