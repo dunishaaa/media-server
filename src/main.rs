@@ -18,27 +18,7 @@ mod yt_dlp;
 async fn main(){
 
     tracing_subscriber::fmt::init();
-    use yt_dlp::{Media, MediaType};
-    use yt_dlp::Download;
 
-//    let _ = yt_dlp::test("https://www.youtube.com/watch?v=MjYWh_OnEuM".to_string());
-    /*
-    let media = Media {
-        MediaType::AUDIO,
-        "720",
-        "https://youtu.be/ChAXAFqzBpw",
-        "mp4",
-        "home/dunishaa/media/prueba/",
-    }
-    */
-    let mut media = Media::new(
-        MediaType::VIDEO,
-        "720",
-        "https://youtu.be/ChAXAFqzBpw",
-        "mp4",
-        "home/dunishaa/media/prueba/"
-    );
-    let _ = media.download();
 
     let _ = config::write_ip();
     let local_ip = local_ip().unwrap();
@@ -53,7 +33,8 @@ async fn main(){
 
     let api = Router::new()
         .route("/folders", get(server::list_folders))
-        .route("/files/{folder}", get(server::list_files));
+        .route("/files/{folder}", get(server::list_files))
+        .route("/download/youtube", get(server::download_video));
 
     let mut app = Router::new()
         .nest("/api", api)

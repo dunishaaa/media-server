@@ -1,9 +1,11 @@
 use axum::{
-    Json,  extract::{Path }, http::StatusCode
+    Json,  extract::Path, http::StatusCode
 };
+use serde::Deserialize;
 use std::{collections::HashMap};
 
 use crate::file_explorer;
+use crate::yt_dlp;
 
 pub async fn list_folders() -> Json<HashMap<String, Vec<String>>> {
     println!("Listing folders...");
@@ -30,6 +32,40 @@ pub async fn list_files(
 
     Ok(Json(files))
 }
+#[derive(Deserialize)]
+enum MediaType {
+    VIDEO,
+    AUDIO,
+}
+
+#[derive(Deserialize)]
+pub struct Media {
+    media_type: MediaType,
+    height_quality: String,
+    url: String,
+    extension: String,
+    download_path: String,
+}
 
 
+pub async fn download_video(
+    Json(payload): Json<Media<>>,
+) -> Result<(), (StatusCode, String)>{
+    let media_type = match payload.media_type {
+        MediaType::VIDEO => yt_dlp::MediaType::VIDEO,
+        MediaType::AUDIO => yt_dlp::MediaType::AUDIO,
+    };
+    let mut media = yt_dlp::Media::new(
+        media_type,
+        &payload.height_quality,
+        &payload.url,
+        &payload.extension,
+        &payload.download_path
+    );
+    let status = media.download();
+    match status {
+        Ok(_) => Ok(()),
+        Err(err) => Err(( StatusCode::BAD_REQUEST, err.to_string()))
+    }
 
+}
