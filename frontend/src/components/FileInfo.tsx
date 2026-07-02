@@ -57,7 +57,8 @@ function FileList(props: {files: File[], folderName:string, filter: string}){
                 {
                     props.files.map((file) =>
                     <FileContainer key={file.name} file={file} folder={props.folderName}/>
-                )}
+                    )
+                }
             </>
         )
     }else{

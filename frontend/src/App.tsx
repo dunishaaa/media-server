@@ -5,6 +5,7 @@ import { lazy, Suspense} from "react";
 
 const FoldersPage = lazy(() => import("./components/Folders"));
 const FileInfo = lazy(() => import("./components/FileInfo"));
+const DownloadPage = lazy(() => import("./components/Download"));
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
         <Routes>
           <Route path="/" element={<FoldersPage />} />
           <Route path="/media/:folderPath" element={<FileInfo/>} />
+          <Route path="/download" element={<DownloadPage/>} />
           <Route path="*" element={<div>Page not found</div>} />
         </Routes>
       </Suspense>

@@ -70,3 +70,5 @@ pub async fn download_video(
     }
 
 }
+
+pub async fn download_playlist(){}
